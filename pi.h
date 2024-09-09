@@ -1,3 +1,15 @@
+/**
+ * @file pi.h
+ * @brief Defines the IMU protocol structures, error codes, and utility functions.
+ *
+ * This header file contains the definitions for the IMU protocol used in the Pistart project. 
+ * It includes data structures, error codes, and functions to handle IMU protocol packets. 
+ * The protocol supports three packet rates: 250 Hz, 500 Hz, and 1000 Hz, which correspond to 
+ * baud rates of 230400, 460800, and 921600 bps respectively.
+ *
+ * @note Ensure that the baud rate matches the packet rate used in the protocol.
+ */
+
 #ifndef pi_h_included
 #define pi_h_included
 

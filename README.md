@@ -1,28 +1,74 @@
-# PiStart
+# Pistart Project
 
-**PiStart** is a C library designed for handling communication protocols, including IMU data parsing and validation, in embedded systems.
+## Overview
 
-## Features
-- IMU protocol packet structure definition.
-- Functions for validating IMU packet headers, sequence numbers, and CRC32 checksums.
-- Simple and efficient implementation for embedded environments.
+The Pistart project is a C-based application designed to parse and validate IMU (Inertial Measurement Unit) protocol packets. It serves as an example of how to use and verify the IMU protocol, including handling different packet rates and baud rates.
 
-## Key Functions
-- **piCheckProtBuffer**: Validates an IMU protocol packet by checking the header and CRC32 checksum.
+## Project Goals
 
-## Installation
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/pistart.git
-    ```
-2. Include `pi.h` in your project.
+The primary goal of this project is to demonstrate the use of the IMU protocol by processing and validating IMU data packets. The application parses hexadecimal representations of these packets, checks their integrity, and prints detailed information about the packet contents and any validation errors.
 
-## Usage
-```c
-#include "pi.h"
+## Packet Rates and Baud Rates
 
-// Example of buffer validation
-PiProtError_t result = piCheckProtBuffer(buffer);
-if (result == PI_PROT_OK) {
-    // Packet is valid
-}
+The IMU protocol supports three different packet rates:
+- **250 Hz**: Corresponds to a baud rate of **230400** bps.
+- **500 Hz**: Corresponds to a baud rate of **460800** bps.
+- **1000 Hz**: Corresponds to a baud rate of **921600** bps.
+
+Ensure that the baud rate set for communication matches the packet rate used in the protocol.
+
+## Files
+
+- **pi.h**: Header file defining data structures, error codes, and functions used for handling IMU protocol packets.
+- **pistart.c**: Main application file that includes functions for parsing packets, converting hexadecimal strings to byte arrays, and printing packet details.
+
+## Functions
+
+### `hexStringToByteArray`
+
+Converts a hexadecimal string to a byte array.
+
+**Parameters:**
+- `hexString`: Hexadecimal string to convert.
+- `byteArray`: Array to store the converted bytes.
+- `byteArrayLen`: Pointer to store the length of the byte array.
+
+**Returns:** Pointer to the byte array.
+
+### `printByteArray`
+
+Prints the contents of a byte array in hexadecimal format.
+
+**Parameters:**
+- `byteArray`: Array of bytes to print.
+- `byteArrayLen`: Length of the byte array.
+
+### `parsePacket`
+
+Parses a packet from its hexadecimal string and prints the packet details.
+
+**Parameters:**
+- `packetHex`: Hexadecimal string representation of the packet.
+
+### `printPacket`
+
+Prints the details of an IMU protocol packet, including validation results.
+
+**Parameters:**
+- `buffer`: Pointer to the byte array containing the IMU protocol packet data.
+
+### `PiProtErrorToString`
+
+Converts an `ImuProtError_t` error code to its string representation.
+
+**Parameters:**
+- `error`: Error code to convert.
+
+**Returns:** String describing the error.
+
+## Compilation
+
+To compile the project, use the following command:
+
+```bash
+gcc -o pistart pistart.c -I.
