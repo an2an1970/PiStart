@@ -4,10 +4,55 @@
 
 #include "pi.h"
 
+/**
+ * @brief Converts a hexadecimal string to a byte array.
+ *
+ * Converts the given hexadecimal string into a byte array. The length of the resulting
+ * byte array is stored in `byteArrayLen`.
+ *
+ * @param hexString A string containing hexadecimal values.
+ * @param byteArray Array to store the converted byte values.
+ * @param byteArrayLen Pointer to store the length of the byte array.
+ * @return Pointer to the byte array.
+ */
 const uint8_t * hexStringToByteArray(const char* hexString, uint8_t * byteArray, size_t* byteArrayLen);
+
+/**
+ * @brief Prints a byte array in hexadecimal format.
+ *
+ * Prints each byte in the array as a two-digit hexadecimal value.
+ *
+ * @param byteArray Array of bytes to print.
+ * @param byteArrayLen Length of the byte array.
+ */
 void printByteArray(const unsigned char* byteArray, size_t byteArrayLen);
+
+/**
+ * @brief Parses a packet from its hexadecimal string representation and prints the packet details.
+ *
+ * Converts the packet's hexadecimal string representation into a byte array and then prints
+ * the details using `printPacket`.
+ *
+ * @param packetHex Hexadecimal string of the packet.
+ */
 void parsePacket(const char * packetHex);
+
+/**
+ * @brief Prints the details of an IMU protocol packet.
+ *
+ * Validates the packet using `piCheckProtBuffer`, calculates the CRC32 checksum, and prints
+ * the packet details including header, sequence, temperature, gyro, and accelerometer values.
+ *
+ * @param buffer Pointer to the byte array containing the IMU protocol packet data.
+ */
 void printPacket(const uint8_t * buffer);
+
+/**
+ * @brief Converts an ImuProtError_t error code to its string representation.
+ *
+ * @param error The ImuProtError_t error code.
+ * @return A string describing the error.
+ */
 const char* PiProtErrorToString(PiProtError_t error);
 
 int main(void) {
