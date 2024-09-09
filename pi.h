@@ -3,169 +3,190 @@
 
 #include <stdint.h>
 
-#define PI_HEADER	0x3141
+#define PI_HEADER    0x3141
 
-#define PI_MUXFACTOR	64
+#define PI_MUXFACTOR    64
 
-#define PI_GYRO_SCALE	(1 << 17)
-#define PI_ACCL_SCALE	(1 << 17)
-#define PI_MAGN_SCALE	(1 << 21)
-#define PI_PRES_SCALE	(1 << 15)
-#define PI_TEMP_SCALE	(1 << 8)
-#define PI_VOLT_SCALE	(1 << 8)
-#define PI_AMPR_SCALE	(1 << 12)
+#define PI_GYRO_SCALE   (1 << 17)
+#define PI_ACCL_SCALE   (1 << 17)
+#define PI_MAGN_SCALE   (1 << 21)
+#define PI_PRES_SCALE   (1 << 15)
+#define PI_TEMP_SCALE   (1 << 8)
+#define PI_VOLT_SCALE   (1 << 8)
+#define PI_AMPR_SCALE   (1 << 12)
 
+/**
+ * @brief Converts a fixed-point number with 1.14.17 format to a floating-point number.
+ *
+ * This function converts a fixed-point integer (1.14.17 format) to a floating-point value.
+ * 
+ * @param fp The fixed-point number to convert.
+ * @return The corresponding floating-point value.
+ */
 static inline float fp1_14_17ToFloat(int32_t fp) {
-	return 1.0f / (1 << 17) * fp;
+    return 1.0f / (1 << 17) * fp;
 }
 
+/**
+ * @brief Converts a fixed-point number with 1.10.21 format to a floating-point number.
+ *
+ * This function converts a fixed-point integer (1.10.21 format) to a floating-point value.
+ * 
+ * @param fp The fixed-point number to convert.
+ * @return The corresponding floating-point value.
+ */
 static inline float fp1_10_21ToFloat(int32_t fp) {
-	return 1.0f / (1 << 21) * fp;
+    return 1.0f / (1 << 21) * fp;
 }
 
+/**
+ * @brief Converts a fixed-point number with 17.15 format to a floating-point number.
+ *
+ * This function converts a fixed-point integer (17.15 format) to a floating-point value.
+ * 
+ * @param fp The fixed-point number to convert.
+ * @return The corresponding floating-point value.
+ */
 static inline float fp17_15ToFloat(uint32_t fp) {
-	return 1.0f / (1 << 15) * fp;
+    return 1.0f / (1 << 15) * fp;
 }
-
 
 #pragma pack(1)
+
+/**
+ * @union PiDate_t
+ * @brief Represents the date in a compact format (Year.Month.Day).
+ */
 typedef union {
-	uint16_t date;				// 4	uint16	Build date (Year.Month.Day: 7.4.5р)
-	struct {
-		uint16_t	day:5;
-		uint16_t	mon:4;
-		uint16_t	year:7;
-	};
+    uint16_t date;        // Build date (Year.Month.Day: 7.4.5)
+    struct {
+        uint16_t day:5;
+        uint16_t mon:4;
+        uint16_t year:7;
+    };
 } PiDate_t;
 
+/**
+ * @union PiVersion_t
+ * @brief Represents the version in a compact format (Major.Minor.Build).
+ */
 typedef union {
-	uint16_t version;			// 3	uint16	Version (Major.Minor.Build: 3.5.8р)
-	struct {
-		uint16_t	build:8;
-		uint16_t	minor:5;
-		uint16_t	major:3;
-	};
+    uint16_t version;     // Version (Major.Minor.Build: 3.5.8)
+    struct {
+        uint16_t build:8;
+        uint16_t minor:5;
+        uint16_t major:3;
+    };
 } PiVersion_t;
 
-typedef	union {
-	struct {
-		uint16_t	fault:1;					// 0 - IMU fault
-
-		uint16_t	xAcclFault:1;				// 1 - Accel XYZ fault
-
-		uint16_t	xGyroFault:1;				// 2 - Gyro XYZ fault
-
-		uint16_t	xMagnFault:1;				// 3 - Magnetometer XYZ fault
-
-		uint16_t	pressureFault:1;			// 4 - pressuremeter fault
-
-		uint16_t	undervoltage:1;				// 5 - undervoltage
-		uint16_t	overvoltage:1;				// 6 - overvoltage
-
-		uint16_t	undertemperature:1;			// 7 - undertemperature
-		uint16_t	overtemperature:1;			// 8 - overtemperature
-
-		uint16_t	firmwareCRCError:1;			// 9 - firmware CRC error
-
-		uint16_t	configCRCError:1;			// 10 - config CRCerror
-
-		uint16_t	reserved:5;
-	};
-	uint16_t ui16;
+/**
+ * @union PiFault_t
+ * @brief Contains fault flags indicating various system errors.
+ */
+typedef union {
+    struct {
+        uint16_t fault:1;                // IMU fault
+        uint16_t xAcclFault:1;           // Accelerometer XYZ fault
+        uint16_t xGyroFault:1;           // Gyroscope XYZ fault
+        uint16_t xMagnFault:1;           // Magnetometer XYZ fault
+        uint16_t pressureFault:1;        // Pressure sensor fault
+        uint16_t undervoltage:1;         // Undervoltage error
+        uint16_t overvoltage:1;          // Overvoltage error
+        uint16_t undertemperature:1;     // Undertemperature error
+        uint16_t overtemperature:1;      // Overtemperature error
+        uint16_t firmwareCRCError:1;     // Firmware CRC error
+        uint16_t configCRCError:1;       // Configuration CRC error
+        uint16_t reserved:5;             // Reserved bits
+    };
+    uint16_t ui16;
 } PiFault_t;
 
-typedef	union {
-	struct {
-		uint16_t	state:3;		// state 0 = ready, 1 = prepare, 2 = warmup, 3 = fault
-
-		int16_t		gyroXOverange:1;
-		int16_t		gyroYOverange:1;
-		int16_t		gyroZOverange:1;
-
-		int16_t		acclXOverange:1;
-		int16_t		acclYOverange:1;
-		int16_t		acclZOverange:1;
-
-		int16_t		magnetometerXOverange:1;
-		int16_t		magnetometerYOverange:1;
-		int16_t		magnetometerZOverange:1;
-
-		int16_t		pressureOverange:1;
-	};
-	uint16_t ui16;
+/**
+ * @union PiFlags_t
+ * @brief Contains status flags indicating various system states and sensor overrange conditions.
+ */
+typedef union {
+    struct {
+        uint16_t state:3;                // System state: 0=ready, 1=prepare, 2=warmup, 3=fault
+        int16_t  gyroXOverange:1;
+        int16_t  gyroYOverange:1;
+        int16_t  gyroZOverange:1;
+        int16_t  acclXOverange:1;
+        int16_t  acclYOverange:1;
+        int16_t  acclZOverange:1;
+        int16_t  magnetometerXOverange:1;
+        int16_t  magnetometerYOverange:1;
+        int16_t  magnetometerZOverange:1;
+        int16_t  pressureOverange:1;
+    };
+    uint16_t ui16;
 } PiFlags_t;
 
+/**
+ * @union PiMux_t
+ * @brief Represents multiplexed sensor data and metadata.
+ */
 typedef union {
-	struct {
-		uint32_t uptime;
-
-		uint32_t gitShort;
-
-		PiDate_t buildDate;				// 	uint16	Дата сборки ПО (Год.Месяц.День: 7.4.5р)
-		PiDate_t manufacturedDate;		// 	uint16	Дата производства ПО (Год.Месяц.День: 7.4.5р)
-
-		PiVersion_t version;
-		uint16_t humanSerial;
-
-		uint32_t hwSerial;
-
-		int16_t	tInternal;	// 1.7.8 Celsius degree
-		int16_t	tExternal;
-
-		uint16_t voltage;		//  input voltage in 8.8V format
-		uint16_t current;		// 	input current in 3.13V format
-
-		PiFault_t triggered;
-		uint16_t  packetRate;
-
-		uint32_t reserved[];	// 10..31	–	Резерв
-	};
-	uint8_t  ui8[0];
-	uint16_t ui16[0];
-	uint32_t ui32[PI_MUXFACTOR];
+    struct {
+        uint32_t uptime;                 // System uptime
+        uint32_t gitShort;               // Git commit short hash
+        PiDate_t buildDate;              // Build date
+        PiDate_t manufacturedDate;       // Manufactured date
+        PiVersion_t version;             // Firmware version
+        uint16_t humanSerial;            // Human-readable serial number
+        uint32_t hwSerial;               // Hardware serial number
+        int16_t  tInternal;              // Internal temperature (1.7.8 Celsius)
+        int16_t  tExternal;              // External temperature
+        uint16_t voltage;                // Input voltage in 8.8V format
+        uint16_t current;                // Input current in 3.13V format
+        PiFault_t triggered;             // Triggered faults
+        uint16_t packetRate;             // Packet transmission rate
+        uint32_t reserved[];             // Reserved space
+    };
+    uint8_t  ui8[0];
+    uint16_t ui16[0];
+    uint32_t ui32[PI_MUXFACTOR];
 } PiMux_t;
 
-typedef	struct {
-	PiFlags_t	flags;
-	PiFault_t	fault;
-
-	int32_t	accl[3];
-	int32_t	gyro[3];
-	int32_t	magn[3];
-
-	uint32_t	pressure;	// 21.11
+/**
+ * @struct PiMainData_t
+ * @brief Main sensor data including accelerometer, gyroscope, magnetometer, and pressure.
+ */
+typedef struct {
+    PiFlags_t flags;         // Status flags
+    PiFault_t fault;         // Faults
+    int32_t   accl[3];       // Accelerometer data (X, Y, Z)
+    int32_t   gyro[3];       // Gyroscope data (X, Y, Z)
+    int32_t   magn[3];       // Magnetometer data (X, Y, Z)
+    uint32_t  pressure;      // Pressure data (21.11 format)
 } PiMainData_t;
 
+/**
+ * @union PiProt_t
+ * @brief Protocol packet structure containing sensor data, header, and CRC.
+ */
 typedef union {
-	struct {
-		uint16_t	header;
-		uint16_t	sequence;
-
-		PiMainData_t data;
-
-		uint32_t	mux;
-    
-		uint32_t	crc32;
-	};
-
-	uint8_t ui8[0];
-	uint8_t ui16[0];
-	uint8_t ui32[0];
+    struct {
+        uint16_t header;      // Packet header
+        uint16_t sequence;    // Sequence number
+        PiMainData_t data;    // Main sensor data
+        uint32_t mux;         // Multiplexed data
+        uint32_t crc32;       // CRC32 is calculated over all parts except header and crc32
+    };
+    uint8_t ui8[0];
+    uint8_t ui16[0];
+    uint8_t ui32[0];
 } PiProt_t;
 #pragma pack()
 
 /**
- * @enum ImuProtError_t
- * @brief Defines error codes used to indicate issues with the IMU protocol.
- *
- * This enum is used to signal different types of errors that may occur
- * while processing IMU data packets, such as incorrect headers, invalid
- * sequences, or CRC validation failures.
+ * @enum PiProtError_t
+ * @brief Defines error codes for the IMU protocol.
  */
 typedef enum {
-    PI_PROT_OK = 0,                // No error, the data packet is valid.
-    PI_PROT_BAD_HEADER = 1,        // The packet header is invalid or does not match the expected value.
-    PI_PROT_BAD_CRC = 3            // The CRC check failed, indicating data corruption.
+    PI_PROT_OK = 0,          // No error, packet is valid
+    PI_PROT_BAD_HEADER = 1,  // Invalid packet header
+    PI_PROT_BAD_CRC = 3      // CRC validation failed
 } PiProtError_t;
 
 #define CRC32_INITIAL 0xFFFFFFFFUL
@@ -174,46 +195,29 @@ typedef enum {
 
 #ifdef PI_SOFT_CRC
 /**
- * @brief Computes the CRC32 checksum of a buffer using a software-based implementation.
+ * @brief Calculates CRC32 checksum of a buffer using software-based CRC computation.
  *
- * This function calculates the CRC32 checksum of a given buffer using a 
- * software-based algorithm. It uses a polynomial and an initial value to 
- * compute the CRC, processing each byte of the buffer and updating the 
- * checksum accordingly.
- *
- * @param buff Pointer to the buffer containing the data to be checked.
+ * @param buff Pointer to the buffer.
  * @param len Length of the buffer in bytes.
- * @return uint32_t The computed CRC32 checksum.
+ * @return The computed CRC32 checksum.
  */
 static inline uint32_t piCrc32(const uint8_t *buff, unsigned short len) {
-	uint32_t crc = CRC32_INITIAL;
-	unsigned short i, j;
-	for (i = 0; i < len; i++)
-	{
-		crc = crc ^ *buff++;
-		for (j = 0; j < 8; j++)
-		{
-			if (crc & 1)
-				crc = (crc >> 1) ^ CRC32_POLYNOM;
-			else
-				crc = crc >> 1;
-		}
-	}
-	return crc ^ CRC32_INITIAL;
+    uint32_t crc = CRC32_INITIAL;
+    unsigned short i, j;
+    for (i = 0; i < len; i++) {
+        crc = crc ^ *buff++;
+        for (j = 0; j < 8; j++) {
+            if (crc & 1)
+                crc = (crc >> 1) ^ CRC32_POLYNOM;
+            else
+                crc = crc >> 1;
+        }
+    }
+    return crc ^ CRC32_INITIAL;
 }
 #else
 /**
- * @brief Precomputed CRC32 lookup table for optimizing CRC32 calculations.
- *
- * This table contains precomputed values for the CRC32 algorithm, used in
- * a table-based implementation to speed up the CRC32 checksum computation.
- * Each entry in the table corresponds to a possible value of the least 
- * significant byte of the CRC, facilitating quick lookups during CRC 
- * calculations.
- *
- * The table is indexed by the value of the current byte in the buffer being 
- * processed, and it helps to reduce the number of computations required to 
- * update the CRC value.
+ * @brief CRC32 lookup table for fast CRC computation.
  */
 static uint32_t crc32_ccitt_table[256] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
@@ -270,16 +274,11 @@ static uint32_t crc32_ccitt_table[256] = {
 	0x2d02ef8d};
 
 /**
- * @brief Computes the CRC32 checksum of a buffer using a table-based implementation.
+ * @brief Calculates CRC32 checksum of a buffer using a precomputed lookup table.
  *
- * This function calculates the CRC32 checksum of a given buffer using a 
- * table-based algorithm. A precomputed table is used to speed up the CRC 
- * computation, processing each byte of the buffer and updating the checksum 
- * based on the precomputed values.
- *
- * @param buff Pointer to the buffer containing the data to be checked.
+ * @param buff Pointer to the buffer.
  * @param len Length of the buffer in bytes.
- * @return uint32_t The computed CRC32 checksum.
+ * @return The computed CRC32 checksum.
  */
 static inline uint32_t piCrc32(const uint8_t *buff, unsigned short len) {
 	uint32_t crc32 = CRC32_INITIAL;
@@ -293,18 +292,15 @@ static inline uint32_t piCrc32(const uint8_t *buff, unsigned short len) {
 #endif
 
 /**
- * @brief Validates the contents of an IMU protocol data packet buffer.
+ * @brief Validates an IMU protocol packet.
  *
- * This function checks the integrity of the IMU protocol packet by verifying its header, 
- * sequence numbers, and CRC32 checksum. If any validation fails, the corresponding 
- * error code from the ImuProtError_t enum is returned.
+ * Checks the packet's header and CRC32 checksum.
  *
- * @param buffer Pointer to the buffer containing the IMU protocol packet.
- * @return ImuProtError_t The result of the validation:
- *         - IMU_PROT_OK: The packet is valid.
- *         - IMU_PROT_BAD_HEADER: The header is invalid.
- *         - IMU_PROT_BAD_SEQUENCER: The sequence numbers do not match.
- *         - IMU_PROT_BAD_CRC: The CRC32 checksum is incorrect.
+ * @param buffer Pointer to the packet buffer.
+ * @return PiProtError_t Result of the validation:
+ *         - PI_PROT_OK: Packet is valid.
+ *         - PI_PROT_BAD_HEADER: Invalid header.
+ *         - PI_PROT_BAD_CRC: Incorrect CRC32.
  */
 static inline PiProtError_t piCheckProtBuffer(const void * buffer) {
     const PiProt_t* prot = (const PiProt_t*)buffer;
@@ -313,6 +309,7 @@ static inline PiProtError_t piCheckProtBuffer(const void * buffer) {
         return PI_PROT_BAD_HEADER;
     }
 
+	// CRC32 is calculated over all parts except header and crc32
     if (piCrc32((void*)&prot->sequence, sizeof(PiProt_t) - sizeof(uint32_t) - sizeof(prot->header)) != prot->crc32) {
         return PI_PROT_BAD_CRC;
     }
